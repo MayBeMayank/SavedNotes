@@ -1,2 +1,2 @@
 # SavedNotes
-Daily note making MERN stack webapp
+**Daily note making MERN stack webapp**

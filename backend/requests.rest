@@ -1,0 +1,11 @@
+
+
+GET    http://localhost:5000/notes
+
+POST   http://localhost:5000/notes/save
+content-type: application/json
+
+{
+    "data": "Second note.",
+    "time": "Wed, 21 Oct 2015 18:27:50 GMT"
+}

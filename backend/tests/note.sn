@@ -1,0 +1,1 @@
+{"date":"4/12/2023","time":"3:40:40 PM","data":"// console.log(new Date().toLocaleTimeString());\n\nconst date = new Date();\n\nconst str = date.toLocaleDateString();\nconst str3 = date.toLocaleTimeString();\n\nconst str2 = date.toLocaleDateString().replace(/\\//g,'') +'_'+ date.toLocaleTimeString().replace(/[':',' ']/g,'');\nconsole.log(str2)"}

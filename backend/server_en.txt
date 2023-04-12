@@ -1,0 +1,59 @@
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const fs = require('fs');
+const crypto = require('crypto');
+const app = express();
+
+app.use(bodyParser.json());
+app.use(cors());
+
+const notesFilePath = './notes.json';
+
+let notes = [];
+
+if (fs.existsSync(notesFilePath)) {
+  const notesData = fs.readFileSync(notesFilePath);
+  const decryptedData = decryptData(notesData);
+  notes = JSON.parse(decryptedData);
+}
+
+function encryptData(data) {
+  const algorithm = 'aes-256-cbc';
+  const key = process.env.ENCRYPTION_KEY;
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv(algorithm, key, iv);
+  const encrypted = Buffer.concat([cipher.update(data), cipher.final()]);
+  return iv.toString('hex') + ':' + encrypted.toString('hex');
+}
+
+function decryptData(data) {
+  const algorithm = 'aes-256-cbc';
+  const key = process.env.ENCRYPTION_KEY;
+  const parts = data.toString().split(':');
+  const iv = Buffer.from(parts.shift(), 'hex');
+  const decipher = crypto.createDecipheriv(algorithm, key, iv);
+  const decrypted = Buffer.concat([decipher.update(Buffer.from(parts.join(':'), 'hex')), decipher.final()]);
+  return decrypted.toString();
+}
+
+app.post('/notes', (req, res) => {
+  const note = req.body;
+  note.timestamp = Date.now();
+  const encryptedData = encryptData(JSON.stringify(note));
+  notes.push(encryptedData);
+  const notesData = JSON.stringify(notes);
+  const encryptedNotesData = encryptData(notesData);
+  fs.writeFileSync(notesFilePath, encryptedNotesData);
+  res.json('Note added successfully');
+});
+
+app.get('/notes', (req, res) => {
+  const decryptedData = decryptData(fs.readFileSync(notesFilePath));
+  const decryptedNotes = JSON.parse(decryptedData);
+  res.json(decryptedNotes);
+});
+
+app.listen(5000, () => {
+  console.log('Server running on port 5000');
+});
